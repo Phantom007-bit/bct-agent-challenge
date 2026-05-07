@@ -1,0 +1,39 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # 1. The React Web Application
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80" # Maps your browser's localhost:5173 to Nginx's port 80
+    depends_on:
+      - gateway
+    networks:
+      - bct_network
+
+  # 2. The Node.js API Routing Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - bct_network
+
+  # 3. The Python AI Microservice (Your teammate's domain)
+  # ai_service:
+  #   build:
+  #     context: ./ai_service
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #     - bct_network
+
+networks:
+  bct_network:
+    driver: bridge
