@@ -1,4 +1,3 @@
-# test_retriever.py
 from retrieval.retriever import get_persona, search_businesses, find_similar_users
 
 # Test 1 — fetch a real persona

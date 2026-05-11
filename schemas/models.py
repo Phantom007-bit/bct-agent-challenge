@@ -1,4 +1,3 @@
-# schemas/models.py
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
@@ -39,7 +38,7 @@ class ContextInput(BaseModel):
     constraints:   Optional[dict] = None
 
 
-# ── Task A — simulate review ──────────────────────────────────────────────────
+# ── Task A — simulate ──────────────────────────────────────────────────
 class SimulateReviewRequest(BaseModel):
     user_persona: PersonaInput
     item:         ItemInput

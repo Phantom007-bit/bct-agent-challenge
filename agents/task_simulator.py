@@ -1,6 +1,10 @@
 import re
 import json
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 import schemas.models as schemas_models
 from schemas.models import SimulateReviewRequest, SimulateReviewResponse, PersonaInput, ItemInput, ContextInput
 from langchain_core.messages import SystemMessage, HumanMessage
