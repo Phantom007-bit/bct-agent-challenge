@@ -27,8 +27,6 @@ Thumbs.db
 data/
 chroma_db/
 
-# Ignore the virtual environment
-.venv/
-__pycache__/
+# Ignore the encrypted files
 *.zip
 *.tar

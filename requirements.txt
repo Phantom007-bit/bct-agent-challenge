@@ -1,14 +1,9 @@
-# ── Torch (CPU only — saves ~2GB vs CUDA version) ─────────────────────────
 --extra-index-url https://download.pytorch.org/whl/cpu
-
-# ── API & Server ──────────────────────────────────────────────────────────
 fastapi
 uvicorn
 httpx
 python-multipart
 python-dotenv
-
-# ── LLM & Agent Framework ─────────────────────────────────────────────────
 anthropic
 langchain>=0.2.0
 langchain-anthropic
@@ -16,26 +11,18 @@ langchain-core>=0.2.0
 langchain-community
 langgraph
 langgraph-checkpoint-sqlite
-
-# ── Vector Store & Embeddings ─────────────────────────────────────────────
 chromadb
 sentence-transformers==2.7.0
 transformers
 torch
-
-# ── Data Loading & Processing ─────────────────────────────────────────────
 datasets
 huggingface_hub
 pandas
 numpy
 tqdm
-
-# ── Notebooks & EDA ───────────────────────────────────────────────────────
 ipykernel
 matplotlib
 seaborn
-
-# ── Utilities ─────────────────────────────────────────────────────────────
 requests
 rich
 pydantic
