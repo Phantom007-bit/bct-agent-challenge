@@ -1,38 +1,38 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  # 1. The React Web Application
   frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend
     ports:
-      - "5173:80" # Maps your browser's localhost:5173 to Nginx's port 80
+      - "5173:80"
     depends_on:
       - gateway
     networks:
       - bct_network
 
-  # 2. The Node.js API Routing Gateway
   gateway:
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
+    build: ./gateway
     ports:
       - "3000:3000"
+    environment:
+      # Directing traffic to the backend service container running on port 8000
+      - AI_SERVICE_URL=http://ai_service:8000
+    depends_on:
+      - ai_service
     networks:
       - bct_network
 
-  # 3. The Python AI Microservice (Your teammate's domain)
-  # ai_service:
-  #   build:
-  #     context: ./ai_service
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   networks:
-  #     - bct_network
+  ai_service:
+    # Build context is the current root directory where main.py lives
+    build: . 
+    # Point explicitly to the root Dockerfile for the Python environment
+    dockerfile: Dockerfile 
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - bct_network
 
 networks:
   bct_network:
