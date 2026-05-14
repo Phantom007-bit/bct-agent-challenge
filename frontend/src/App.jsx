@@ -171,17 +171,17 @@ function App() {
                 <h2 className="text-xl font-semibold mb-4 text-gray-800">Ranked Output (NDCG Optimized)</h2>
                 {resultB ? (
                   <div className="space-y-4">
-                    {resultB.map((item) => (
-                      <div key={item.rank} className="p-5 border border-gray-100 rounded-lg bg-gray-50 flex gap-4">
+                    {resultB.recommendations.map((item, i) => (
+                      <div key={item.item} className="p-5 border border-gray-100 rounded-lg bg-gray-50 flex gap-4">
                         <div className="shrink-0 w-12 h-12 bg-blue-100 text-blue-800 font-bold text-xl rounded-full flex items-center justify-center">
-                          #{item.rank}
+                          #{i + 1}
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-gray-900">{item.item}</h3>
+                          <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
                           <span className="inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded mt-1 mb-2">
-                            {item.category}
+                            {item.categories}
                           </span>
-                          <p className="text-sm text-gray-600"><strong className="text-gray-800">Agent Reasoning:</strong> {item.reasoning}</p>
+                          <p className="text-sm text-gray-600"><strong className="text-gray-800">Agent Reasoning:</strong> {item.reason}</p>
                         </div>
                       </div>
                     ))}

@@ -33,12 +33,17 @@ app.post('/api/simulate', async (req, res) => {
 
     try {
         // <-- ADDED 3: Updated URL to match your actual Python FastAPI route
-        const aiResponse = await axios.post('http://127.0.0.1:8000/simulate-review', {
-            user_id: "demo_user",
-            business_id: "demo_business",
-            user_context: userContext,
-            business_context: businessContext
-        });
+       const aiResponse = await axios.post('http://127.0.0.1:8000/simulate-review', {
+    user_persona: {
+        description: userContext
+    },
+    item: {
+        name: businessContext,
+        categories: "Restaurant",
+        city: "Lagos"
+    }
+});
+
         res.json(aiResponse.data);
     } catch (error) {
         console.error(`[Gateway Error - Task A] AI Service unreachable:`, error.message);
@@ -60,9 +65,14 @@ app.post('/api/recommend', async (req, res) => {
     try {
         // <-- ADDED 3: Updated URL to match your actual Python FastAPI route
         const aiResponse = await axios.post('http://127.0.0.1:8000/recommend', {
-            user_id: "demo_user",
-            user_context: userContext
-        });
+    user_persona: {
+        description: userContext
+    },
+    context: {
+        intent: userContext
+    },
+    k: 5
+});
         res.json(aiResponse.data);
     } catch (error) {
         console.error(`[Gateway Error - Task B] AI Service unreachable:`, error.message);
