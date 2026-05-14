@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path'); // <-- ADDED 1: Needed to find your HTML files
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,6 +11,20 @@ app.use(cors()); // Allows the Vite React app to communicate with this server
 app.use(express.json());
 
 // ==========================================
+// --- ADDED 2: SERVE YOUR HTML UI PAGES ---
+// ==========================================
+// This tells Node to look in the parent folder for your HTML files
+app.use(express.static(path.join(__dirname, '../')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../login.html'));
+});
+
+// ==========================================
 // ROUTE: TASK A (User Modeling Agent)
 // ==========================================
 app.post('/api/simulate', async (req, res) => {
@@ -17,7 +32,8 @@ app.post('/api/simulate', async (req, res) => {
     console.log(`[Gateway] Routing Task A simulation request to AI service...`);
 
     try {
-        const aiResponse = await axios.post('http://127.0.0.1:8000/api/task-a/generate', {
+        // <-- ADDED 3: Updated URL to match your actual Python FastAPI route
+        const aiResponse = await axios.post('http://127.0.0.1:8000/simulate-review', {
             user_id: "demo_user",
             business_id: "demo_business",
             user_context: userContext,
@@ -42,7 +58,8 @@ app.post('/api/recommend', async (req, res) => {
     console.log(`[Gateway] Routing Task B recommendation request to AI service...`);
 
     try {
-        const aiResponse = await axios.post('http://127.0.0.1:8000/api/task-b/recommend', {
+        // <-- ADDED 3: Updated URL to match your actual Python FastAPI route
+        const aiResponse = await axios.post('http://127.0.0.1:8000/recommend', {
             user_id: "demo_user",
             user_context: userContext
         });
