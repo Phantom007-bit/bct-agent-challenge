@@ -55,11 +55,37 @@ def parse_persona_node(state: SimulatorState) -> dict:
 
 # ── Node 2: Retrieve context ──────────────────────────────────────────────────
 def retrieve_context_node(state: SimulatorState) -> dict:
-    print("Retrieving user history and building context...")
+    print("🔍 Retrieving context...")
     persona = state["persona"]
     item    = state["raw_item"]
 
-    # Get past reviews most similar to this item type
+    # Extract city from item OR from the full description
+    city = item.get("city")
+    if not city or city == "Lagos":
+        description = state["raw_persona"].get("description", "")
+        item_name   = item.get("name", "")
+        full_text   = f"{description} {item_name}".lower()
+
+        city_map = {
+            "abuja": "Abuja", "wuse": "Abuja", "maitama": "Abuja",
+            "garki": "Abuja", "asokoro": "Abuja",
+            "port harcourt": "Port Harcourt", "ph": "Port Harcourt",
+            "ibadan": "Ibadan", "bodija": "Ibadan",
+            "kano": "Kano", "sabon gari": "Kano",
+            "lekki": "Lagos", "vi": "Lagos", "victoria island": "Lagos",
+            "ikeja": "Lagos", "surulere": "Lagos", "yaba": "Lagos",
+            "ikoyi": "Lagos", "ajah": "Lagos"
+        }
+
+        detected = None
+        for keyword, mapped_city in city_map.items():
+            if keyword in full_text:
+                detected = mapped_city
+                break
+
+        city = detected or item.get("city", "Lagos")
+
+    # Rest of the function
     user_reviews = get_user_reviews(
         user_id=persona.get("user_id", ""),
         query=f"{item.get('name', '')} {item.get('categories', '')}",
@@ -67,7 +93,7 @@ def retrieve_context_node(state: SimulatorState) -> dict:
     )
 
     cultural_context   = build_cultural_context(
-        city=item.get("city", "Lagos"),
+        city=city,
         categories=item.get("categories", ""),
         persona_top_categories=persona.get("top_categories", [])
     )
@@ -80,55 +106,73 @@ def retrieve_context_node(state: SimulatorState) -> dict:
     return {
         "user_reviews":       user_reviews,
         "cultural_context":   cultural_context,
-        "style_instructions": style_instructions
+        "style_instructions": style_instructions,
+        "resolved_city":      city    # pass city forward to generate node
     }
 
 
 # ── Node 3: Generate review ───────────────────────────────────────────────────
 def generate_review_node(state: SimulatorState) -> dict:
-    print("Generating simulated review...")
-    persona = state["persona"]
-    item    = state["raw_item"]
-    reviews = state["user_reviews"]
+    print("✍️  Generating review...")
+    persona     = state["persona"]
+    item        = state["raw_item"]
+    reviews     = state["user_reviews"]
+    city        = state.get("resolved_city", "Lagos")
+    description = state["raw_persona"].get("description", "")
 
-    # Format past reviews as writing examples for the LLM
+    # Determine how Nigerian to be
+    from core.naija_layer import get_naija_tone_level
+    tone_level  = get_naija_tone_level(description)
+
+    tone_instruction = {
+        "full":     "Write in natural Nigerian English with Pidgin where it fits naturally.",
+        "moderate": "Write in Nigerian English with occasional Nigerian expressions.",
+        "subtle":   "Write in clean English. Only use very light Nigerian phrasing if it fits."
+    }[tone_level]
+
     examples = ""
     if reviews:
         examples = "\n\nReal examples of how this user writes:\n"
         for i, r in enumerate(reviews[:3], 1):
             examples += f"{i}. ({r['stars']}★) \"{r['text'][:200]}\"\n"
 
-    prompt = f"""You are simulating a product/restaurant review written by a specific Nigerian user.
-USER BEHAVIORAL PROFILE:
-- Average rating they give: {persona['avg_rating']} stars
-- Writing style: {state['style_instructions']}
-- Categories they frequent: {', '.join(persona.get('top_categories', [])[:3])}
-- Is cold start (new user): {persona.get('is_cold_start', False)}
+    prompt = f"""You are simulating a review written by a specific user.
 
-{state['cultural_context']}
+USER BEHAVIORAL PROFILE:
+- Average rating: {persona['avg_rating']} stars
+- Writing style: {state['style_instructions']}
+- Frequently visits: {', '.join(persona.get('top_categories', [])[:3])}
+
+LANGUAGE TONE: {tone_instruction}
+
+LOCATION CONTEXT: {state['cultural_context']}
+IMPORTANT: This business is located in {city}. 
+Do not reference any other city. All location context must be specific to {city}.
+
+CUISINE/CATEGORY: {item.get('categories', 'Restaurant')}
+Write your review referencing the actual type of food/service this place offers.
+Do not substitute with unrelated cuisine types.
+
+WRITING LENGTH: {state['style_instructions']}
+You MUST respect the review length stated above. If it says 30 words, write 30 words maximum.
 {examples}
 
 ITEM BEING REVIEWED:
 Name: {item.get('name', '')}
 Categories: {item.get('categories', '')}
-City: {item.get('city', 'Lagos')}
+City: {city}
 
-TASK:
-Simulate exactly what this user would write if they visited this place.
-Capture their tone, their rating tendency, and their cultural voice.
-
-Respond in this exact JSON format — nothing else:
+Respond ONLY in this JSON format:
 {{
     "rating": <integer 1-5>,
-    "review_text": "<the full simulated review>",
-    "reasoning_trace": "<why you chose this rating and tone based on their profile>"
+    "review_text": "<the simulated review>",
+    "reasoning_trace": "<why this rating and tone based on the profile>"
 }}"""
 
     response = llm.invoke([
         SystemMessage(content=NAIJA_SYSTEM_PROMPT),
         HumanMessage(content=prompt)
     ])
-
     return {"raw_response": response.content}
 
 

@@ -40,7 +40,7 @@ app.post('/api/simulate', async (req, res) => {
     item: {
         name: businessContext,
         categories: "Restaurant",
-        city: "Lagos"
+        city: null
     }
 });
 

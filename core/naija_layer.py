@@ -121,3 +121,25 @@ def get_recommendation_framing(top_categories: list, city: str) -> str:
     city_note = f"Focus recommendations in {city} where possible — proximity matters to Nigerian users."
 
     return f"{flavor} {city_note}"
+
+def get_naija_tone_level(persona_description: str) -> str:
+    """
+    Determines how strongly to apply Nigerian tone based on persona signals.
+    Returns 'full', 'moderate', or 'subtle'.
+    """
+    desc = persona_description.lower()
+
+    nigerian_signals = [
+        "nigerian", "lagos", "abuja", "naija", "pidgin",
+        "port harcourt", "ibadan", "kano", "yoruba", "igbo", "hausa",
+        "jollof", "buka", "suya", "sha", "sef", "naira"
+    ]
+
+    matches = sum(1 for signal in nigerian_signals if signal in desc)
+
+    if matches >= 2:
+        return "full"
+    elif matches == 1:
+        return "moderate"
+    else:
+        return "subtle"
